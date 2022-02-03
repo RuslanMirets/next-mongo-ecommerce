@@ -1,14 +1,27 @@
 import Link from 'next/link';
-import React from 'react';
+import React, { useContext } from 'react';
+import { addToCart } from '../../store/Actions';
+import { DataContext } from '../../store/GlobalState';
 
 const ProductItem = ({ product }) => {
+  const { state, dispatch } = useContext(DataContext);
+  const { cart } = state;
+
   const userLink = () => {
     return (
       <>
         <Link href={`product/${product._id}`}>
-          <a className="btn btn-info" style={{marginRight: '5px', flex: 1}}>Подробнее</a>
+          <a className="btn btn-info" style={{ marginRight: '5px', flex: 1 }}>
+            Подробнее
+          </a>
         </Link>
-        <button className='btn btn-success' style={{marginLeft: '5px', flex: 1}}>Купить</button>
+        <button
+          className="btn btn-success"
+          style={{ marginLeft: '5px', flex: 1 }}
+          disabled={product.inStock === 0 ? true : false}
+          onClick={() => dispatch(addToCart(product, cart))}>
+          Купить
+        </button>
       </>
     );
   };
