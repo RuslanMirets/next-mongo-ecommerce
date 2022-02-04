@@ -3,6 +3,7 @@ import Head from 'next/head';
 import Link from 'next/link';
 import React, { useContext, useEffect, useState } from 'react';
 import CartItem from '../components/CartItem';
+import PaypalBtn from '../components/PaypalBtn';
 import { DataContext } from '../store/GlobalState';
 import { getData } from '../utils/fetchData';
 
@@ -11,6 +12,10 @@ const Cart = () => {
   const { cart, auth } = state;
 
   const [total, setTotal] = useState(0);
+
+  const [address, setAddress] = useState('');
+  const [mobile, setMobile] = useState('');
+  const [payment, setPayment] = useState(false);
 
   useEffect(() => {
     const getTotal = () => {
@@ -47,6 +52,15 @@ const Cart = () => {
     }
   }, [dispatch]);
 
+  const handlePayment = () => {
+    if (!address || !mobile)
+      return dispatch({
+        type: 'NOTIFY',
+        payload: { error: 'Введите адрес и номер мобильного телефона' },
+      });
+    setPayment(true);
+  };
+
   if (cart.length === 0)
     return <img className="img-responsive w-100" src="/empty_cart.jpg" alt="Empty" />;
 
@@ -69,16 +83,42 @@ const Cart = () => {
         <form>
           <h2>Доставка</h2>
           <label htmlFor="address">Адрес</label>
-          <input className="form-control mb-2" type="text" name="address" id="address" />
+          <input
+            className="form-control mb-2"
+            type="text"
+            name="address"
+            id="address"
+            value={address}
+            onChange={(e) => setAddress(e.target.value)}
+          />
           <label htmlFor="mobile">Телефон</label>
-          <input className="form-control mb-2" type="text" name="mobile" id="mobile" />
+          <input
+            className="form-control mb-2"
+            type="tel"
+            name="mobile"
+            id="mobile"
+            value={mobile}
+            onChange={(e) => setMobile(e.target.value)}
+          />
         </form>
         <h3>
           Всего: <span className="text-danger">${total}</span>
         </h3>
-        <Link href={auth.user ? '#' : '/login'}>
-          <a className="btn btn-dark my-2">Приступить к оплате</a>
-        </Link>
+        {payment ? (
+          <PaypalBtn
+            total={total}
+            address={address}
+            mobile={mobile}
+            state={state}
+            dispatch={dispatch}
+          />
+        ) : (
+          <Link href={auth.user ? '#' : '/login'}>
+            <a className="btn btn-dark my-2" onClick={handlePayment}>
+              Приступить к оплате
+            </a>
+          </Link>
+        )}
       </div>
     </div>
   );
